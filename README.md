@@ -1,45 +1,62 @@
-# Data Analysis
+# Data Analysis — учёт и анализ личных расходов
 
-Консольное приложение на Spring Boot для учёта наборов данных и анализа измерений.
+Приложение на Spring Boot с хранением данных в PostgreSQL через Spring Data JPA / Hibernate.
 
 ## Требования
 
 - Java 21
 - Maven 3.6.3 или новее
+- PostgreSQL (база `data_analysis`)
 
-Данные хранятся в памяти и сбрасываются при перезапуске приложения.
+## Настройка базы данных
 
-## Модель
+Создать базу:
 
-- `User` — учётная запись с логином, хешем пароля BCrypt и отображаемым именем.
-- `DataSet` — набор данных, принадлежащий пользователю.
-- `DataPoint` — числовое измерение набора с названием метрики, значением, единицей и временем записи.
-
-Все три сущности имеют уникальный идентификатор. Репозитории используют singleton-списки, внедряемые Spring.
-
-## Команды которые я запускал
-
-
-```text
-register anna secret Anna
-login anna secret
-sets create weather weather_station_readings
-points add 1 temperature 18.5 C
-points add 1 temperature 21.0 C
-analyze 1 temperature
-points list 1
-logout
+```sql
+CREATE DATABASE data_analysis;
 ```
 
-Для каждой метрики команда analyze показывает количество записей, сумму, среднее, минимум и максимум. Команды sets, points и analyze доступны после входа; пользователь может работать только со своими наборами.
+Параметры подключения — в `src/main/resources/application.properties`
+(`spring.datasource.url`, `username`, `password`). Таблицы создаются автоматически
+при старте (`spring.jpa.hibernate.ddl-auto=update`).
 
-Полный список команд выводится при запуске или командой help.
+## Структура БД
+
+5 сущностей (см. [ER-диаграмму](docs/er-diagram.md)):
+
+- `User` — пользователь (login, password_hash, display_name).
+- `Account` — счёт (name, balance, currency).
+- `Category` — категория расходов (name, description, monthly_limit).
+- `Expense` — трата (amount, spent_at, comment).
+- `Budget` — плановый бюджет по категории (period_start, period_end, planned_amount).
+
+## Доступ к данным
+
+- Репозитории Spring Data на базе `CrudRepository` — пакет `repository`.
+- Query Method с ключевыми словами And/Between: `ExpenseRepository.findByUserIdAndAmountBetween`.
+- JPQL через связанную сущность: `ExpenseRepository.findByCategoryName` (`@Query`).
+- Те же два запроса на Criteria API: `ExpenseRepositoryCustom` + `ExpenseRepositoryImpl`.
+
+## Транзакции
+
+`AccountServiceImpl.createAccountWithExpense` создаёт счёт и первую трату в одной
+транзакции через `PlatformTransactionManager`. Трата не может существовать без счёта,
+поэтому при некорректной трате транзакция откатывается и счёт не сохраняется.
+
+## Тесты
+
+```bash
+mvn test
+```
+
+- `ExpenseRepositoryQueryTest` — Query Method и `@Query`.
+- `ExpenseCriteriaTest` — аналогичные запросы на Criteria API.
+- `AccountServiceTransactionTest` — транзакционный метод: успешный сценарий и откат.
+
+Тесты выполняются на in-memory базе H2 и не требуют запущенного PostgreSQL.
 
 ## Actuator
 
-После запуска доступны:
-
 - `http://localhost:8080/actuator/health`
-- `http://localhost:8080/actuator/info`
 - `http://localhost:8080/actuator/metrics`
 - `http://localhost:8080/actuator/metrics/jvm.info`
