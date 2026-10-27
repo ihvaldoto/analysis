@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Список трат</title>
+</head>
+<body>
+<h1>Список трат</h1>
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Дата</th>
+        <th>Сумма</th>
+        <th>Описание</th>
+        <th>Счёт</th>
+        <th>Категория</th>
+    </tr>
+    <tr th:each="expense : ${expenses}">
+        <td th:text="${expense.id}"></td>
+        <td th:text="${expense.spentAt}"></td>
+        <td th:text="${expense.amount}"></td>
+        <td th:text="${expense.description}"></td>
+        <td th:text="${expense.account.name}"></td>
+        <td th:text="${expense.category.name}"></td>
+    </tr>
+</table>
+</body>
+</html>

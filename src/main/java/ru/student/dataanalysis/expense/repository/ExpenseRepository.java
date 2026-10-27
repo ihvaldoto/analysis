@@ -2,6 +2,7 @@ package ru.student.dataanalysis.expense.repository;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.repository.query.Param;
 import ru.student.dataanalysis.expense.entity.Expense;
 
@@ -9,6 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+@RepositoryRestResource(path = "expenses")
 public interface ExpenseRepository extends CrudRepository<Expense, Long> {
 
     /**
@@ -19,7 +21,8 @@ public interface ExpenseRepository extends CrudRepository<Expense, Long> {
      * @param to        конец периода
      * @param minAmount минимальная сумма траты
      */
-    List<Expense> findBySpentAtBetweenAndAmountGreaterThanEqual(LocalDate from, LocalDate to, BigDecimal minAmount);
+    List<Expense> findBySpentAtBetweenAndAmountGreaterThanEqual(@Param("from") LocalDate from, @Param("to") LocalDate to,
+                                                                   @Param("minAmount") BigDecimal minAmount);
 
     /**
      * Находит траты по названию связанной категории (JPQL).
