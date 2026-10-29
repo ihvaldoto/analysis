@@ -1,14 +1,17 @@
 package ru.student.dataanalysis.expense.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 /**
- * Владелец счетов и категорий расходов.
+ * Пользователь приложения: владелец счетов и категорий расходов, он же учётная запись для входа.
  */
 @Entity
 @Table(name = "app_users")
@@ -26,6 +29,17 @@ public class AppUser {
 
     @Column
     private String email;
+
+    /**
+     * BCrypt-хеш пароля. Скрыт из JSON, чтобы не отдавался через REST.
+     */
+    @JsonIgnore
+    @Column(name = "password_hash")
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private Role role = Role.USER;
 
     public Long getId() {
         return id;
@@ -57,5 +71,21 @@ public class AppUser {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 }

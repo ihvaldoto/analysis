@@ -93,6 +93,21 @@ erDiagram
 шаблон `src/main/resources/templates/expenseList.html`, тесты `RestApiTest`.
 
 Версия springdoc 2.8.9 вместо 2.6.0 из методички: 2.6.0 не рассчитана на Spring Boot 3.5.
+## Практическая работа 6: Spring Security
+
+Вход по логину и паролю через свою форму, роли `USER` и `ADMIN`.
+
+- `/registration` — регистрация (доступна всем). Пароль хранится как BCrypt-хеш, роль новому пользователю всегда `USER`, из формы её выбрать нельзя.
+- `/login`, `/logout` — вход и выход (выход — кнопка на странице `/custom/expenses/view/list`).
+- Всё остальное только для вошедших; неавторизованного перенаправляет на `/login`.
+- Только `ADMIN`: Swagger UI (`/swagger-ui/index.html`, `/v3/api-docs`), список пользователей `/users`, `/actuator/**`.
+- Администратор создаётся при старте из `app.admin.login` / `app.admin.password` (в `application.properties` по умолчанию `admin` / `admin`, смените). Если `app.admin.password` не задан, администратор не создаётся.
+- Хеш пароля скрыт из JSON (`@JsonIgnore`), через REST не отдаётся.
+- CSRF-защита включена: формы Thymeleaf подставляют токен сами, а POST/PUT/DELETE к REST из Swagger UI без токена вернут 403.
+
+Код: `expense/security` (`SecurityConfig`, `AppUserDetailsService`, `AdminInitializer`), `expense/service/AppUserService`,
+`expense/controller` (`RegistrationController`, `LoginController`), шаблоны `login.html` и `registration.html`,
+тесты `SecurityTest` и `AppUserServiceTest`.
 ## Actuator
 
 После запуска доступны:
