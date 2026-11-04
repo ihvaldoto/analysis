@@ -22,6 +22,8 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
                                 "/users/**", "/actuator/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
+                // создание отчёта вызывается из Swagger/клиентов без формы, поэтому CSRF-токен для него не требуется
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/custom/reports"))
                 .formLogin(form -> form
                         .loginPage("/login")
                         .defaultSuccessUrl("/custom/expenses/view/list")
